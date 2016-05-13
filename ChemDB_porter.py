@@ -118,7 +118,10 @@ def create_database():
     'environment_hazard' TEXT DEFAULT FALSCH,
     '13C' INTEGER DEFAULT FALSCH,
     'D' INTEGER DEFAULT FALSCH,
-    'lab' TEXT)
+    'lab' TEXT,
+    'missing' TEXT DEFAULT FALSCH,
+    'in use by' TEXT DEFAULT None,
+    'almost empty' TEXT DEFAULT FALSCH)
     """
     cursor.execute(db_format)#Befehl ausführen
     connection.commit()#Befehl abschicken
@@ -180,5 +183,5 @@ def porter():
                 connection.commit()#Befehl abschicken
     connection.close()#Verbindung schließen
 
-create_database()
+#create_database()
 porter()
