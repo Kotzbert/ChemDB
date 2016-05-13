@@ -118,14 +118,11 @@ def create_database():
     'environment_hazard' TEXT DEFAULT FALSCH,
     '13C' INTEGER DEFAULT FALSCH,
     'D' INTEGER DEFAULT FALSCH,
-<<<<<<< HEAD
     'lab' TEXT,
     'missing' TEXT DEFAULT FALSCH,
     'in use by' TEXT DEFAULT None,
     'almost empty' TEXT DEFAULT FALSCH)
-=======
     'lab' TEXT)
->>>>>>> 2739442f7f317bc1e569d54cb52b6a09da275380
     """
     cursor.execute(db_format)#Befehl ausführen
     connection.commit()#Befehl abschicken
@@ -187,9 +184,6 @@ def porter():
                 connection.commit()#Befehl abschicken
     connection.close()#Verbindung schließen
 
-<<<<<<< HEAD
+
 #create_database()
-=======
-create_database()
->>>>>>> 2739442f7f317bc1e569d54cb52b6a09da275380
 porter()
