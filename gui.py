@@ -68,32 +68,5 @@ SearchButton()
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-#functions
-def callback():
-	print('Ich liebe dich!')
-
-
-#Labels
-l = Label(master, text='Hallo Katharina')
-#l.pack()
-
-
-#Buttons
-b = Button(master, text='weißt du was?', command=callback)
-#b.pack()
-
-
 master.mainloop()
 
