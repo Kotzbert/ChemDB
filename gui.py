@@ -1,8 +1,14 @@
 # -*- coding: utf-8 -*-
+#!C:/Program Files (x86)/Python 3.5/python.exe
 
-from Tkinter import *
-import ttk
+from tkinter import *
+#import ttk
 import re
+import sqlite3
+import sys
+import os
+
+
 
 def atoms():
 	'''
@@ -10,7 +16,7 @@ def atoms():
 	'''
 	i=0
 	number_of_atoms = []
-	while i <= 10:
+	while i <= 100:
 		number_of_atoms.append(str(i))
 		i += 1
 #	print(str(number_of_atoms)[1:-1])
@@ -34,16 +40,16 @@ def ElementButton(element,x,y):
 	'''
 	variable = StringVar(master)
 	variable.set(element) # default value
-
 	l = Label()
 	w =OptionMenu(master, variable, *atoms())
 	#das * ist notwendig, damit die Funktion funzt
+	w.config(width=2, height=1, borderwidth=1, highlightbackground='ghost white', background='LightSteelBlue2', relief=RIDGE, font=('Arial', 12))#relief types: flat, groove, raised, ridge, solid, or sunken 
 	w.grid(column=x, row=y)
 	#print(variable.get())
 	return(variable)
 	
 
-
+#intermittently used function - maybe obsolete
 def sum_formula():#prints all values of buttons that are digits
 	pattern = r"[1-9]+" #regex for one or more digits
 	for item in button_list:
@@ -52,9 +58,58 @@ def sum_formula():#prints all values of buttons that are digits
 		else:
 			pass
 
+
+
+#search an item in the database
+def get_value(**kwargs): #number of args variable
+
+	###formatting of buttons states from tkinter into sql query___________________________________________
+	pattern = r"[1-9]+" #regex for one or more digits
+	formatted_values = ('Name, MW') # enter column names for values to be selected by SQL
+	formatted_query= str('')
+	for value in button_list:#button needs to be dictionary like and will come from tkinter gui
+		#if the value of a button is a digit it will be added to the sql query
+		if re.match(pattern, button_list[value].get()): 
+			formatted_query = str(formatted_query + ' AND ' + value + '=\'' + str(button_list[value].get())+'\'')
+		else:
+			pass
+	#the first 'AND' needs to be sliced off
+	formatted_query = formatted_query[5:]
+	print(formatted_query)
+
+	###execution of SQL query___________________________________________
+	connection = sqlite3.connect("Chemikalienliste.db")
+	cursor = connection.cursor()
+	query=r'''SELECT {0} FROM 'Chemikalien' WHERE {1};
+	'''.format(formatted_values, formatted_query)
+	print(query)
+	cursor.execute(query)#Befehl ausführen
+	results = cursor.fetchall()
+	connection.commit()#Befehl abschicken
+	print('get value:',results)
+	return(results)
+
+
+def results_window(results):
+	w= Listbox(master, selectmode=SINGLE)
+	w.grid(row=13, columnspan=26)
+	w.config(width=180)
+	#print('results window:',results)
+	for entry in results:
+		
+		w.insert(END, entry)
+
+def value_and_result():#function to call two functions from SearchButton()
+	results = get_value()
+	results_window(results)
+
 def SearchButton():
-	w = Button(master, text='Suche', command=sum_formula)
-	w.grid(column=10, row=18)
+	w = Button(master, text='Search', command=value_and_result)
+	w.grid(column=8, row=11, columnspan=2)
+	w.config(width=12, height=2)
+	results=[]
+	print('SearchButton:',results)
+	return(results)
 
 
 
@@ -64,8 +119,8 @@ def SearchButton():
 master = Tk()
 master.title('ChemDB')
 master.minsize(500,300)
+master.config(bg='ghost white')
 #master.configure(bg = 'white')
-
 
 
 #button grid and creation of dictionary with key-value pairs for elements and atoms
@@ -83,11 +138,8 @@ for a in element_list:
 	else:
 		x +=1
 
-#print(button_list)
 
 SearchButton()
-
-
 
 master.mainloop()
 
