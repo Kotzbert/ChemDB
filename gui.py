@@ -93,11 +93,11 @@ def get_value(**kwargs): #number of args variable
 def results_window(results):
 	w= Listbox(master, selectmode=SINGLE)
 	w.grid(row=13, columnspan=26)
-	w.config(width=180)
+	w.config(width=136, font=('Monaco', 10))
 	#print('results window:',results)
+	w.insert(END, "{:^40}{:^4}".format('Name', 'MW'))
 	for entry in results:
-		
-		w.insert(END, entry)
+		w.insert(END, "{:<40}{:>4}".format(entry[0], entry[1]))
 
 def value_and_result():#function to call two functions from SearchButton()
 	results = get_value()
