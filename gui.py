@@ -65,7 +65,7 @@ def get_value(**kwargs): #number of args variable
 
 	###formatting of buttons states from tkinter into sql query___________________________________________
 	pattern = r"[1-9]+" #regex for one or more digits
-	formatted_values = ('Name, MW') # enter column names for values to be selected by SQL
+	formatted_values = ("Name, lab, in_use_by, missing") # enter column names for values to be selected by SQL
 	formatted_query= str('')
 	for value in button_list:#button needs to be dictionary like and will come from tkinter gui
 		#if the value of a button is a digit it will be added to the sql query
@@ -86,22 +86,40 @@ def get_value(**kwargs): #number of args variable
 	cursor.execute(query)#Befehl ausführen
 	results = cursor.fetchall()
 	connection.commit()#Befehl abschicken
-	print('get value:',results)
+	#print('get value:',results)
 	return(results)
 
 
-def results_window(results):
+def results_window(results):#window showing the results of search action 
 	w= Listbox(master, selectmode=SINGLE)
-	w.grid(row=13, columnspan=26)
-	w.config(width=136, font=('Monaco', 10))
+	w.grid(row=10, columnspan=11)#position on window grid
+	w.config(width=90, font=('TkFixedFont'))
 	#print('results window:',results)
-	w.insert(END, "{:^40}{:^4}".format('Name', 'MW'))
-	for entry in results:
-		w.insert(END, "{:<40}{:>4}".format(entry[0], entry[1]))
+	w.insert(END, "{:^50}{:^8}{:^12}{:^6}".format('Name', 'Raum', 'benutzt', 'vermisst'))
+	try:
+		for entry in results:
+			if entry[2] == 'None':
+				nutzung = ''
+			else:
+				nutzung = entry[2]
+			if entry[3] == 'FALSCH':
+				vermisst = ''
+			else:
+				vermisst = entry[3]
+			w.insert(END, "{:<50}{:^8}{:^12}{:^6}".format(entry[0], entry[1], nutzung, vermisst))
+	except OperationalDecodeError:
+		ignore
+
+def details_window(details):
+	w= Listbox(master, selectmode=SINGLE)
+	w.grid(row=13, columnspan=8)
+	w.config(width=70, font=('Monaco', 10))
+	for detail in details:
+		w.insert(END, "{}{}".format(detail[0], detail[1]))
+
 
 def value_and_result():#function to call two functions from SearchButton()
-	results = get_value()
-	results_window(results)
+	results_window(get_value())
 
 def SearchButton():
 	w = Button(master, text='Search', command=value_and_result)

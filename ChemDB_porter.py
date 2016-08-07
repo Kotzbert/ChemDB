@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-#!C:/Program Files (x86)/Python 3.5/python.exe
+#!C:/Program Files (x86)/Python 2.7/python.exe
 
 import sys
 import os
@@ -120,10 +120,11 @@ def create_database():
     'D' INTEGER DEFAULT FALSCH,
     'lab' TEXT,
     'missing' TEXT DEFAULT FALSCH,
-    'in use by' TEXT DEFAULT None,
-    'almost empty' TEXT DEFAULT FALSCH)
-    'lab' TEXT)
+    'in_use_by' TEXT DEFAULT None,
+    'almost_empty' TEXT DEFAULT FALSCH);
     """
+    cursor.execute(r'PRAGMA encoding = "UTF-8";')
+    connection.commit()
     cursor.execute(db_format)#Befehl ausführen
     connection.commit()#Befehl abschicken
     connection.close()#Verbindung schließen
@@ -134,6 +135,7 @@ def porter():
     """
     All apostrophes in the chemicals CVS file have to be escaped
     manually by "searching and replacing" all ' into ''
+    Make sure that head and tail of .csv are clean!!
     """
     x = 1 #trigger
     #open old csv file
@@ -179,11 +181,11 @@ def porter():
                 line[69],line[70],line[71],line[72],line[73],line[77],line[78],line[79],line[80],line[81],
                 line[82],line[83],line[84],line[85],line[86],line[87],line[88],line[89],line[90],line[120],
                 line[116],line[119],line[117],line[110],line[111],line[114],line[115],line[112],line[113],line[118],line[106],line[105],line[1])
-                print(format_str)
+                print(line[0])
                 cursor.execute(format_str)#Befehl ausführen
                 connection.commit()#Befehl abschicken
     connection.close()#Verbindung schließen
 
 
-#create_database()
+create_database()
 porter()
