@@ -19,9 +19,16 @@ def atoms():
 	while i <= 100:
 		number_of_atoms.append(str(i))
 		i += 1
-#	print(str(number_of_atoms)[1:-1])
 	return(number_of_atoms)
 
+
+def sum_formula():#prints all values of buttons that are digits
+	pattern = r"[1-9]+" #regex for one or more digits
+	for item in button_list:
+		if re.match(pattern, button_list[item].get()): 
+			print(item + ' : ' + button_list[item].get())
+		else:
+			pass
 
 element_list = ['H','XX','XX','XX','XX','XX','XX','XX','XX','XX','XX','XX','XX','XX','XX','XX','XX','He',
 				'Li','Be','XX','XX','XX','XX','XX','XX','XX','XX','XX','XX','B','C','N','O','F','Ne',
@@ -49,23 +56,11 @@ def ElementButton(element,x,y):
 	return(variable)
 	
 
-#intermittently used function - maybe obsolete
-def sum_formula():#prints all values of buttons that are digits
-	pattern = r"[1-9]+" #regex for one or more digits
-	for item in button_list:
-		if re.match(pattern, button_list[item].get()): 
-			print(item + ' : ' + button_list[item].get())
-		else:
-			pass
-
-
-
 #search an item in the database
 def get_value(**kwargs): #number of args variable
-
+	global results
 	###formatting of buttons states from tkinter into sql query___________________________________________
 	pattern = r"[1-9]+" #regex for one or more digits
-	formatted_values = ("Name, lab, in_use_by, missing") # enter column names for values to be selected by SQL
 	formatted_query= str('')
 	for value in button_list:#button needs to be dictionary like and will come from tkinter gui
 		#if the value of a button is a digit it will be added to the sql query
@@ -80,54 +75,90 @@ def get_value(**kwargs): #number of args variable
 	###execution of SQL query___________________________________________
 	connection = sqlite3.connect("Chemikalienliste.db")
 	cursor = connection.cursor()
-	query=r'''SELECT {0} FROM 'Chemikalien' WHERE {1};
-	'''.format(formatted_values, formatted_query)
+	query=r'''SELECT * FROM 'Chemikalien' WHERE {0};
+	'''.format(formatted_query)
 	print(query)
 	cursor.execute(query)#Befehl ausführen
 	results = cursor.fetchall()
 	connection.commit()#Befehl abschicken
 	#print('get value:',results)
+	#print('result:\n', results)
 	return(results)
 
 
-def results_window(results):#window showing the results of search action 
-	w= Listbox(master, selectmode=SINGLE)
-	w.grid(row=10, columnspan=11)#position on window grid
-	w.config(width=90, font=('TkFixedFont'))
-	#print('results window:',results)
-	w.insert(END, "{:^50}{:^8}{:^12}{:^6}".format('Name', 'Raum', 'benutzt', 'vermisst'))
-	try:
-		for entry in results:
-			if entry[2] == 'None':
-				nutzung = ''
-			else:
-				nutzung = entry[2]
-			if entry[3] == 'FALSCH':
-				vermisst = ''
-			else:
-				vermisst = entry[3]
-			w.insert(END, "{:<50}{:^8}{:^12}{:^6}".format(entry[0], entry[1], nutzung, vermisst))
-	except OperationalDecodeError:
-		ignore
-
-def details_window(details):
-	w= Listbox(master, selectmode=SINGLE)
-	w.grid(row=13, columnspan=8)
-	w.config(width=70, font=('Monaco', 10))
-	for detail in details:
-		w.insert(END, "{}{}".format(detail[0], detail[1]))
-
-
 def value_and_result():#function to call two functions from SearchButton()
-	results_window(get_value())
+	results = Suche.results_window(Suche.search(get_value()))
+
 
 def SearchButton():
 	w = Button(master, text='Search', command=value_and_result)
 	w.grid(column=8, row=11, columnspan=2)
 	w.config(width=12, height=2)
-	results=[]
-	print('SearchButton:',results)
-	return(results)
+
+
+
+
+###
+###
+###
+
+
+class Suche():
+
+	def __init__(self):
+		self.results = results
+
+
+	def search(self):
+
+		###formatting of buttons states from tkinter into sql query___________________________________________
+		pattern = r"[1-9]+" #regex for one or more digits
+		formatted_values = ("id, Name, lab, in_use_by, missing") # enter column names for values to be selected by SQL
+		formatted_query= str('')
+		for value in button_list:#button needs to be dictionary like and will come from tkinter gui
+			#if the value of a button is a digit it will be added to the sql query
+			if re.match(pattern, button_list[value].get()): 
+				formatted_query = str(formatted_query + ' AND ' + value + '=\'' + str(button_list[value].get())+'\'')
+			else:
+				pass
+		#the first 'AND' needs to be sliced off
+		formatted_query = formatted_query[5:]
+		print(formatted_query)
+
+		###execution of SQL query___________________________________________
+		connection = sqlite3.connect("Chemikalienliste.db")
+		cursor = connection.cursor()
+		query=r'''SELECT * FROM 'Chemikalien' WHERE {0};
+		'''.format(formatted_query)
+		print(query)
+		cursor.execute(query)#Befehl ausführen
+		results = cursor.fetchall()
+		connection.commit()#Befehl abschicken
+		#print('get value:',results)
+		#print('result:\n', results)
+		return(results)
+
+	def results_window(results):#window showing the results of search action 
+		w= Listbox(master, selectmode=SINGLE)
+		w.grid(row=10, columnspan=28)#position on window grid
+		w.config(width=135, font=('TkFixedFont'))
+		#print('results window:',results)
+		w.insert(END, "{:^80}|{:^10}|{:^6}|{:^6}|{:^10}|{:^10}".format('Name', 'Lab','g','ml', 'in use by', 'missing'))
+		try:
+			for entry in results:
+				if entry[-2] == 'None':
+					nutzung = '-'
+				else:
+					nutzung = entry[24]
+				if entry[-3] == 'FALSCH':
+					vermisst = '-'
+				else:
+					vermisst = '+'
+				w.insert(END, "{:80}|{:^10}|{:^6}|{:^6}|{:^10}|{:^10}".format(entry[1], entry[-4], entry[3],entry[4], nutzung, vermisst))
+		except:
+			pass
+		#w.bind('<<ListboxSelect>>', details???)
+		return(results)
 
 
 
